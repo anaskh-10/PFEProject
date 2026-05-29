@@ -1,0 +1,73 @@
+groups:
+  - name: cpu_alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU on {{ $labels.instance }}"
+          description: "CPU usage is above 80% for more than 1 minute."
+
+  - name: memory-alerts
+    rules:
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < 0.2
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low available memory"
+
+  - name: disk-alerts
+    rules:
+      - alert: DiskAlmostFull
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.15
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk almost full"
+
+  - name: network_alerts
+    rules:
+      - alert: HighNetworkTraffic
+        expr: rate(node_network_receive_bytes_total[1m]) > 10000000
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High incoming network traffic"
+
+  - name: postgres_alerts
+    rules:
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL DOWN"
+
+  - name: node_alerts
+    rules:
+      - alert: NodeDown
+        expr: up{job="node-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Node {{ $labels.instance }} is DOWN"
+          description: "Node exporter on {{ $labels.instance }} has been unreachable for more than 1 minute."
+
+  - name: container_alerts
+    rules:
+      - alert: ContainerDown
+        expr: up{job="cadvisor"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "cAdvisor {{ $labels.instance }} is DOWN"
+          description: "cAdvisor on {{ $labels.instance }} is unreachable for more than 1 minute."

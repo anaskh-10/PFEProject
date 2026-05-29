@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIOps Monitoring Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    :root {
+      --bg: #05070e;
+      --surface: #0a0f1c;
+      --card: #0f1525;
+      --card-h: #141c32;
+      --border: rgba(255, 255, 255, .045);
+      --border-h: rgba(255, 255, 255, .09);
+      --v: #8b7aff;
+      --cy: #22d3ee;
+      --gn: #34d399;
+      --yl: #facc15;
+      --or: #fb923c;
+      --rd: #f87171;
+      --pk: #f472b6;
+      --bl: #60a5fa;
+      --text: #e8ecf4;
+      --muted: #5c6b8a;
+      --radius: 14px;
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh
+    }
+
+    .glow {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(100px);
+      opacity: .1;
+      z-index: 0
+    }
+
+    .glow-1 {
+      width: 500px;
+      height: 500px;
+      top: -120px;
+      left: -80px;
+      background: var(--pk)
+    }
+
+    .glow-2 {
+      width: 400px;
+      height: 400px;
+      bottom: -100px;
+      right: -60px;
+      background: var(--cy);
+      opacity: .07
+    }
+
+    .glow-3 {
+      width: 350px;
+      height: 350px;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--v);
+      opacity: .05
+    }
+
+    .wrap {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 1.2rem 1.8rem;
+      position: relative;
+      z-index: 1
+    }
+
+    /* HEADER */
+    .hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.6rem;
+      flex-wrap: wrap;
+      gap: 1rem
+    }
+
+    .hdr-l {
+      display: flex;
+      align-items: center;
+      gap: .75rem
+    }
+
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--v), var(--pk));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -.05em;
+      flex-shrink: 0
+    }
+
+    .hdr-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -.04em;
+      background: linear-gradient(135deg, var(--text), var(--muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent
+    }
+
+    .hdr-sub {
+      font-size: .7rem;
+      color: var(--muted);
+      margin-top: 1px
+    }
+
+    .hdr-r {
+      display: flex;
+      gap: .5rem;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      border-radius: 99px;
+      padding: 5px 12px;
+      font-size: .7rem;
+      font-weight: 600
+    }
+
+    .pill-g {
+      background: rgba(52, 211, 153, .07);
+      border: 1px solid rgba(52, 211, 153, .18);
+      color: var(--gn)
+    }
+
+    .pill-o {
+      background: rgba(251, 146, 60, .07);
+      border: 1px solid rgba(251, 146, 60, .18);
+      color: var(--or)
+    }
+
+    .pill-b {
+      background: rgba(96, 165, 250, .07);
+      border: 1px solid rgba(96, 165, 250, .18);
+      color: var(--bl)
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%
+    }
+
+    .dot-g {
+      background: var(--gn);
+      box-shadow: 0 0 8px var(--gn);
+      animation: pulse 2s infinite
+    }
+
+    .dot-o {
+      background: var(--or);
+      box-shadow: 0 0 8px var(--or);
+      animation: pulse 1.6s infinite
+    }
+
+    .dot-b {
+      background: var(--bl)
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .25
+      }
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 3px;
+      background: var(--card);
+      border-radius: 11px;
+      padding: 3px;
+      border: 1px solid var(--border);
+      width: fit-content;
+      margin-bottom: 1.6rem;
+      flex-wrap: wrap
+    }
+
+    .tab {
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: .74rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      border: none;
+      background: none;
+      transition: all .2s
+    }
+
+    .tab:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, .03)
+    }
+
+    .tab.on {
+      background: linear-gradient(135deg, var(--v), var(--pk));
+      color: #fff;
+      box-shadow: 0 2px 16px rgba(139, 122, 255, .25)
+    }
+
+    /* SECTIONS */
+    .sec {
+      display: none;
+      animation: fadeUp .35s ease
+    }
+
+    .sec.on {
+      display: block
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(6px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    /* SECTION TITLE */
+    .sec-t {
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      color: var(--muted);
+      margin-bottom: .9rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem
+    }
+
+    .sec-t::before {
+      content: '';
+      width: 3px;
+      height: 14px;
+      background: linear-gradient(180deg, var(--v), var(--pk));
+      border-radius: 3px
+    }
+
+    /* KPI GRID */
+    .kg {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: .75rem;
+      margin-bottom: 1.2rem
+    }
+
+    .kg-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: .75rem;
+      margin-bottom: 1.2rem
+    }
+
+    .kg-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: .75rem;
+      margin-bottom: 1.2rem
+    }
+
+    /* KPI CARD */
+    .kpi {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.15rem;
+      position: relative;
+      overflow: hidden;
+      transition: all .22s
+    }
+
+    .kpi:hover {
+      transform: translateY(-1px);
+      border-color: var(--border-h);
+      background: var(--card-h)
+    }
+
+    .kpi-stripe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      border-radius: var(--radius) var(--radius) 0 0
+    }
+
+    .kpi-label {
+      font-size: .63rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      color: var(--muted);
+      margin-bottom: .35rem
+    }
+
+    .kpi-val {
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: -.04em;
+      line-height: 1.15
+    }
+
+    .kpi-hint {
+      font-size: .67rem;
+      color: var(--muted);
+      margin-top: .2rem;
+      line-height: 1.4
+    }
+
+    /* BADGE */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .25rem;
+      padding: 2px 8px;
+      border-radius: 7px;
+      font-size: .62rem;
+      font-weight: 700;
+      margin-left: .3rem;
+      vertical-align: middle
+    }
+
+    .badge-ok {
+      background: rgba(52, 211, 153, .1);
+      color: var(--gn)
+    }
+
+    .badge-warn {
+      background: rgba(250, 204, 21, .1);
+      color: var(--yl)
+    }
+
+    .badge-crit {
+      background: rgba(248, 113, 113, .12);
+      color: var(--rd);
+      animation: blink-badge .8s infinite
+    }
+
+    @keyframes blink-badge {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .5
+      }
+    }
+
+    /* GAUGE CARD */
+    .gauge-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: .75rem;
+      margin-bottom: 1.2rem
+    }
+
+    .gauge-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.15rem;
+      position: relative;
+      overflow: hidden;
+      transition: all .22s;
+      cursor: default
+    }
+
+    .gauge-card:hover {
+      border-color: var(--border-h);
+      background: var(--card-h)
+    }
+
+    .gauge-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: .5rem
+    }
+
+    .gauge-name {
+      font-size: .63rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted)
+    }
+
+    .gauge-body {
+      display: flex;
+      align-items: center;
+      gap: .75rem
+    }
+
+    .gauge-svg-wrap {
+      flex-shrink: 0
+    }
+
+    .gauge-info {}
+
+    .gauge-score {
+      font-size: 1.35rem;
+      font-weight: 900;
+      letter-spacing: -.04em;
+      line-height: 1
+    }
+
+    .gauge-sub {
+      font-size: .65rem;
+      color: var(--muted);
+      margin-top: .2rem
+    }
+
+    .gauge-bar {
+      height: 3px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, .06);
+      margin-top: .6rem;
+      overflow: hidden
+    }
+
+    .gauge-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width .6s ease
+    }
+
+    /* CARD */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.3rem 1.4rem;
+      margin-bottom: 1rem
+    }
+
+    .card-hd {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: .5rem
+    }
+
+    .card-t {
+      font-size: .88rem;
+      font-weight: 700;
+      letter-spacing: -.02em
+    }
+
+    .leg {
+      display: flex;
+      gap: .85rem;
+      flex-wrap: wrap
+    }
+
+    .leg-i {
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+      font-size: .7rem;
+      color: var(--muted)
+    }
+
+    .leg-d {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    .cw {
+      position: relative
+    }
+
+    .cw-sm {
+      height: 200px
+    }
+
+    .cw-md {
+      height: 260px
+    }
+
+    .cw-lg {
+      height: 320px
+    }
+
+    /* FORECAST */
+    .fc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: .85rem;
+      margin-bottom: 1rem
+    }
+
+    .fc-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem
+    }
+
+    .fc-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: .85rem
+    }
+
+    .fc-title {
+      font-size: .85rem;
+      font-weight: 700
+    }
+
+    .fc-vals {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: .5rem;
+      margin-bottom: .75rem
+    }
+
+    .fc-val-box {
+      background: rgba(255, 255, 255, .025);
+      border-radius: 9px;
+      padding: .6rem .75rem;
+      text-align: center
+    }
+
+    .fc-val-label {
+      font-size: .6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      margin-bottom: .2rem
+    }
+
+    .fc-val-num {
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: -.03em
+    }
+
+    .fc-ci {
+      font-size: .67rem;
+      color: var(--muted);
+      margin-bottom: .6rem
+    }
+
+    .cw-xs {
+      height: 120px
+    }
+
+    /* INFRA TABLE */
+    .infra-row {
+      display: grid;
+      grid-template-columns: 160px 1fr 1fr 1fr 1fr;
+      gap: .5rem;
+      align-items: center;
+      padding: .6rem .75rem;
+      border-bottom: 1px solid var(--border);
+      font-size: .78rem
+    }
+
+    .infra-row:last-child {
+      border-bottom: none
+    }
+
+    .infra-head {
+      font-size: .6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted)
+    }
+
+    .bar-wrap {
+      background: rgba(255, 255, 255, .05);
+      border-radius: 4px;
+      height: 6px;
+      overflow: hidden
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width .5s
+    }
+
+    /* TABLE */
+    .tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .76rem
+    }
+
+    .tbl th {
+      text-align: left;
+      padding: .5rem .75rem;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      font-size: .6rem;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .tbl td {
+      padding: .48rem .75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, .025)
+    }
+
+    .tbl tr:hover td {
+      background: rgba(255, 255, 255, .015)
+    }
+
+    /* FOOTER */
+    footer {
+      margin-top: 2rem;
+      padding: 1rem 0;
+      text-align: center;
+      font-size: .68rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border)
+    }
+
+    footer b {
+      background: linear-gradient(90deg, var(--v), var(--pk));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent
+    }
+
+    /* PROGRESS BAR COUNTDOWN */
+    .refresh-bar {
+      width: 100%;
+      height: 2px;
+      background: rgba(255, 255, 255, .05);
+      border-radius: 1px;
+      overflow: hidden;
+      margin-bottom: 1.4rem
+    }
+
+    .refresh-progress {
+      height: 100%;
+      background: linear-gradient(90deg, var(--v), var(--pk));
+      border-radius: 1px;
+      transition: width 1s linear
+    }
+  </style>
+</head>
+
+<body>
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+  <div class="glow glow-3"></div>
+
+  <div class="wrap">
+
+    <!-- HEADER -->
+    <header class="hdr">
+      <div class="hdr-l">
+        <div class="logo">AI</div>
+        <div>
+          <div class="hdr-title">AIOps Monitoring Dashboard</div>
+          <div class="hdr-sub" id="clock-sub">Chargement...</div>
+        </div>
+      </div>
+      <div class="hdr-r">
+        <div class="pill pill-g">
+          <div class="dot dot-g"></div><span id="nodes-count">2 nodes online</span>
+        </div>
+        <div class="pill pill-o">
+          <div class="dot dot-o"></div>Live data
+        </div>
+        <div class="pill pill-b">
+          <div class="dot dot-b"></div>Refresh: <span id="cd-text">30s</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- REFRESH BAR -->
+    <div class="refresh-bar">
+      <div class="refresh-progress" id="rfbar" style="width:100%"></div>
+    </div>
+
+    <!-- TABS -->
+    <nav class="tabs">
+      <button class="tab on" data-t="ml" onclick="go('ml')">ML Anomaly Detection</button>
+      <button class="tab" data-t="fc" onclick="go('fc')">Forecasting</button>
+      <button class="tab" data-t="infra" onclick="go('infra')">Infrastructure</button>
+      <button class="tab" data-t="pg" onclick="go('pg')">PostgreSQL</button>
+      <button class="tab" data-t="ctr" onclick="go('ctr')">Containers</button>
+      <button class="tab" data-t="class" onclick="go('class')">Classification</button>
+    </nav>
+
+    <!-- ═══ SECTION ML ═══ -->
+    <section class="sec on" id="s-ml">
+      <div class="sec-t">Scores d'anomalie ML — temps réel</div>
+      <div class="gauge-grid" id="gauges"></div>
+      <div class="card">
+        <div class="card-hd">
+          <span class="card-t">Historique des scores — toutes métriques</span>
+          <div class="leg" id="anom-leg"></div>
+        </div>
+        <div class="cw cw-md"><canvas id="ch-anom"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION FORECAST ═══ -->
+    <section class="sec" id="s-fc">
+      <div class="sec-t">Prédictions ARIMA — prochaines minutes</div>
+      <div class="fc-grid" id="fc-grid"></div>
+    </section>
+
+    <!-- ═══ SECTION INFRA ═══ -->
+    <section class="sec" id="s-infra">
+      <div class="sec-t">Infrastructure — 2 machines</div>
+      <div class="kg" id="infra-kpis"></div>
+      <div class="card">
+        <div class="card-hd">
+          <span class="card-t">CPU usage — évolution</span>
+          <div class="leg">
+            <div class="leg-i">
+              <div class="leg-d" style="background:var(--v)"></div>192.168.161.3
+            </div>
+            <div class="leg-i">
+              <div class="leg-d" style="background:var(--cy)"></div>192.168.161.4
+            </div>
+          </div>
+        </div>
+        <div class="cw cw-sm"><canvas id="ch-cpu"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <span class="card-t">Memory usage — évolution</span>
+        </div>
+        <div class="cw cw-sm"><canvas id="ch-mem"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <span class="card-t">Network IN/OUT — MB/s</span>
+        </div>
+        <div class="cw cw-sm"><canvas id="ch-net"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION PG ═══ -->
+    <section class="sec" id="s-pg">
+      <div class="sec-t">PostgreSQL — connexions actives</div>
+      <div class="kg" id="pg-kpis"></div>
+      <div class="card">
+        <div class="card-hd"><span class="card-t">Connexions actives — historique</span></div>
+        <div class="cw cw-md"><canvas id="ch-pg"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION CONTAINERS ═══ -->
+    <section class="sec" id="s-ctr">
+      <div class="sec-t">Containers — CPU et mémoire</div>
+      <div class="kg-4" id="ctr-cards"></div>
+      <div class="card">
+        <div class="card-hd"><span class="card-t">CPU par container</span></div>
+        <div class="cw cw-sm"><canvas id="ch-ctr-cpu"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-t">Mémoire par container (MB)</span></div>
+        <div class="cw cw-sm"><canvas id="ch-ctr-mem"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ═══ SECTION CLASSIFICATION ═══ -->
+    <section class="sec" id="s-class">
+      <div class="sec-t">Classification des Alertes</div>
+      <div class="card">
+        <div class="card-hd"><span class="card-t">Tableau de Bord des Séverités (Temps Réel)</span></div>
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Métrique</th>
+              <th>Score d'Anomalie</th>
+              <th>Sévérité (Classifiée)</th>
+              <th>Action Recommandée</th>
+            </tr>
+          </thead>
+          <tbody id="class-body">
+            <!-- Dynamic data -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      Powered by <b>Prometheus MCP</b> · ML: IsolationForest + ARIMA · Auto-refresh 30s ·
+      Dernière MAJ: <span id="last-ts">—</span>
+    </footer>
+
+  </div>
+
+  <script>
+    const PROM = 'http://192.168.161.4:9090';
+    const IPS = ['192.168.161.3', '192.168.161.4'];
+    const ML_METRICS = ['cpu', 'memory', 'disk', 'network_in', 'network_out', 'pg_connections', 'container_cpu', 'container_memory'];
+    const ML_NAMES = { cpu: 'CPU', memory: 'Memory', disk: 'Disk', network_in: 'Net IN', network_out: 'Net OUT', pg_connections: 'PG Conn', container_cpu: 'Ctr CPU', container_memory: 'Ctr Mem' };
+    const PALETTE = ['#8b7aff', '#22d3ee', '#34d399', '#facc15', '#fb923c', '#f87171', '#f472b6', '#60a5fa'];
+
+    let charts = {};
+    let hist = { anom: {}, cpu: {}, mem: {}, net: {}, pg: [], ts: [] };
+    ML_METRICS.forEach(m => hist.anom[m] = []);
+    IPS.forEach(ip => { hist.cpu[ip] = []; hist.mem[ip] = []; hist.net[ip] = { in: [], out: [] }; });
+
+    let cdVal = 30;
+    let cdInterval;
+
+    function go(t) {
+      document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+      document.querySelectorAll('.sec').forEach(s => s.classList.toggle('on', s.id === 's-' + t));
+    }
+
+    function pct(v, d = 1) { return (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d) + '%'; }
+    function fmt(v, d = 2) { return (Math.round(v * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d); }
+
+    function scoreColor(s) {
+      if (s >= 0.8) return '#f87171';
+      if (s >= 0.5) return '#facc15';
+      return '#34d399';
+    }
+    function scoreClass(s) {
+      if (s >= 0.8) return 'badge-crit';
+      if (s >= 0.5) return 'badge-warn';
+      return 'badge-ok';
+    }
+    function scoreLabel(s) {
+      if (s >= 0.8) return 'CRITICAL';
+      if (s >= 0.5) return 'WARNING';
+      return 'NORMAL';
+    }
+    function barColor(v) {
+      if (v >= 80) return '#f87171';
+      if (v >= 60) return '#facc15';
+      return '#34d399';
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock-sub').textContent =
+        now.toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }) +
+        ' · ' + now.toLocaleTimeString('fr-FR');
+    }
+
+    function startCountdown() {
+      cdVal = 30;
+      clearInterval(cdInterval);
+      cdInterval = setInterval(() => {
+        cdVal--;
+        document.getElementById('cd-text').textContent = cdVal + 's';
+        document.getElementById('rfbar').style.width = (cdVal / 30 * 100) + '%';
+        if (cdVal <= 0) { fetchAll(); cdVal = 30; }
+      }, 1000);
+    }
+
+    async function qry(query) {
+      try {
+        const r = await fetch(`${PROM}/api/v1/query?query=${encodeURIComponent(query)}`);
+        const j = await r.json();
+        return j.data?.result || [];
+      } catch (e) { return []; }
+    }
+
+    async function qryRange(query, mins = 30, step = 60) {
+      try {
+        const end = Math.floor(Date.now() / 1000);
+        const start = end - mins * 60;
+        const r = await fetch(`${PROM}/api/v1/query_range?query=${encodeURIComponent(query)}&start=${start}&end=${end}&step=${step}`);
+        const j = await r.json();
+        return j.data?.result || [];
+      } catch (e) { return []; }
+    }
+
+    function mkChart(id, type, data, opts) {
+      const ctx = document.getElementById(id)?.getContext('2d');
+      if (!ctx) return;
+      if (charts[id]) charts[id].destroy();
+      charts[id] = new Chart(ctx, {
+        type, data, options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false }, tooltip: {
+              backgroundColor: 'rgba(10,15,28,.95)', borderColor: 'rgba(255,255,255,.06)', borderWidth: 1,
+              titleColor: '#5c6b8a', bodyColor: '#e8ecf4', padding: 10, cornerRadius: 8
+            }
+          },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,.025)' }, ticks: { color: '#5c6b8a', maxTicksLimit: 8, font: { size: 10 } } },
+            y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#5c6b8a', font: { size: 10 } } }
+          },
+          ...opts
+        }
+      });
+      return charts[id];
+    }
+
+    function renderGauges(scores, detected) {
+      const el = document.getElementById('gauges');
+      el.innerHTML = '';
+      ML_METRICS.forEach((m, i) => {
+        const s = scores[m] ?? 0;
+        let d = detected[m] ?? 0;
+        
+        // Override status label if score is very high, even if IsolationForest didn't trigger
+        if (s >= 0.8) d = 1;
+
+        // Classification part: Low/Medium/High/Critical mapping based on score
+        let badgeCls = 'badge-ok';
+        let badgeTxt = 'OK';
+        
+        if (s >= 0.8) {
+          badgeCls = 'badge-crit';
+          badgeTxt = 'CRITICAL';
+        } else if (s >= 0.5 || d === 1) {
+          badgeCls = 'badge-warn';
+          badgeTxt = 'WARNING';
+        }
+
+        const col = scoreColor(s);
+        const pctW = Math.round(s * 100);
+        const r = 32, cx = 44, cy = 44;
+        const ang = s * Math.PI;
+        const ex = cx - r * Math.cos(Math.PI - ang);
+        const ey = cy - r * Math.sin(ang);
+        const large = s > 0.5 ? 1 : 0;
+
+        const div = document.createElement('div');
+        div.className = 'gauge-card';
+        div.innerHTML = `
+      <div class="gauge-top">
+        <div class="gauge-name">${ML_NAMES[m]}</div>
+        <span class="badge ${badgeCls}">${badgeTxt}</span>
+      </div>
+      <div class="gauge-body">
+        <div class="gauge-svg-wrap">
+          <svg width="88" height="50" viewBox="0 0 88 50">
+            <path d="M10,44 A34,34,0,0,1,78,44" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="7" stroke-linecap="round"/>
+            <path d="M10,44 A34,34,0,${large},1,${ex.toFixed(1)},${(44 - r * Math.sin(ang)).toFixed(1)}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="gauge-info">
+          <div class="gauge-score" style="color:${col}">${fmt(s * 100, 0)}<span style="font-size:.75rem;font-weight:500">%</span></div>
+          <div class="gauge-sub">score ${fmt(s, 3)}</div>
+        </div>
+      </div>
+      <div class="gauge-bar"><div class="gauge-fill" style="width:${pctW}%;background:${col}"></div></div>`;
+        el.appendChild(div);
+      });
+    }
+
+    function renderAnomChart(scores) {
+      const now = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      hist.ts.push(now);
+      ML_METRICS.forEach(m => hist.anom[m].push(+(scores[m] ?? 0).toFixed(3)));
+      const maxLen = 20;
+      if (hist.ts.length > maxLen) {
+        hist.ts.shift();
+        ML_METRICS.forEach(m => hist.anom[m].shift());
+      }
+
+      const leg = document.getElementById('anom-leg');
+      leg.innerHTML = ML_METRICS.map((m, i) => `<div class="leg-i"><div class="leg-d" style="background:${PALETTE[i]}"></div>${ML_NAMES[m]}</div>`).join('');
+
+      const el = document.getElementById('ch-anom');
+      if (!el) return;
+      const ctx = el.getContext('2d');
+      if (charts.anom) charts.anom.destroy();
+      charts.anom = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: hist.ts,
+          datasets: ML_METRICS.map((m, i) => ({
+            label: ML_NAMES[m],
+            data: hist.anom[m],
+            borderColor: PALETTE[i],
+            fill: false, tension: .4, pointRadius: 1, borderWidth: 2
+          }))
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: true, labels: { font: { size: 10 }, color: '#5c6b8a', boxWidth: 8, padding: 10 } },
+            tooltip: { backgroundColor: 'rgba(10,15,28,.95)', borderColor: 'rgba(255,255,255,.06)', borderWidth: 1, titleColor: '#5c6b8a', bodyColor: '#e8ecf4', padding: 10, cornerRadius: 8 },
+            annotation: {
+              annotations: {
+                warn: { type: 'line', yMin: .5, yMax: .5, borderColor: 'rgba(250,204,21,.35)', borderWidth: 1, borderDash: [5, 4] },
+                crit: { type: 'line', yMin: .8, yMax: .8, borderColor: 'rgba(248,113,113,.35)', borderWidth: 1, borderDash: [5, 4] }
+              }
+            }
+          },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,.025)' }, ticks: { color: '#5c6b8a', maxTicksLimit: 8, font: { size: 10 } } },
+            y: { min: 0, max: 1, grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#5c6b8a', font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    function renderForecast(fcData) {
+      const el = document.getElementById('fc-grid');
+      el.innerHTML = '';
+      const items = [
+        { key: 'cpu', name: 'CPU', color: '#8b7aff' },
+        { key: 'memory', name: 'Memory', color: '#22d3ee' },
+        { key: 'disk', name: 'Disk', color: '#34d399' }
+      ];
+      items.forEach(item => {
+        const f = fcData[item.key] || {};
+        const cur = f.cur ?? 0;
+        const f1 = f.f1 ?? cur;
+        const f6 = f.f6 ?? cur;
+        const lo = f.lo ?? Math.max(0, cur - 5);
+        const hi = f.hi ?? Math.min(100, cur + 5);
+        const trend = f1 > cur + 0.5 ? '↑' : f1 < cur - 0.5 ? '↓' : '→';
+        const trendCol = f1 > cur + 0.5 ? '#fb923c' : f1 < cur - 0.5 ? '#34d399' : '#5c6b8a';
+
+        const id = 'fc-ch-' + item.key;
+        const div = document.createElement('div');
+        div.className = 'fc-card';
+        div.innerHTML = `
+      <div class="fc-head">
+        <span class="fc-title">${item.name} Forecast</span>
+        <span style="font-size:.8rem;color:${trendCol};font-weight:700">${trend} ${fmt(f1 - cur, 1)}%</span>
+      </div>
+      <div class="fc-vals">
+        <div class="fc-val-box">
+          <div class="fc-val-label">Current</div>
+          <div class="fc-val-num" style="color:${item.color}">${pct(cur)}</div>
+        </div>
+        <div class="fc-val-box">
+          <div class="fc-val-label">+1 min</div>
+          <div class="fc-val-num" style="color:${trendCol}">${pct(f1)}</div>
+        </div>
+        <div class="fc-val-box">
+          <div class="fc-val-label">+6 min</div>
+          <div class="fc-val-num">${pct(f6)}</div>
+        </div>
+      </div>
+      <div class="fc-ci">Intervalle de confiance 95% : ${pct(lo)} — ${pct(hi)}</div>
+      <div class="cw cw-xs"><canvas id="${id}"></canvas></div>`;
+        el.appendChild(div);
+
+        setTimeout(() => {
+          const ctx = document.getElementById(id)?.getContext('2d');
+          if (!ctx) return;
+          if (charts[id]) charts[id].destroy();
+          const labels = ['Now', '+1m', '+2m', '+3m', '+4m', '+5m', '+6m'];
+          const mid = [cur, f1, (cur + f6) / 2 * 0.99, (cur + f6) / 2, f6 * 0.99, f6, f6];
+          const upBound = labels.map(() => hi);
+          const loBound = labels.map(() => lo);
+          charts[id] = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels, datasets: [
+                { label: 'upper', data: upBound, borderColor: 'rgba(255,255,255,.1)', fill: false, pointRadius: 0, borderWidth: 1, borderDash: [4, 3] },
+                { label: 'forecast', data: mid, borderColor: item.color, backgroundColor: item.color + '15', fill: 1, tension: .4, pointRadius: 3, borderWidth: 2 },
+                { label: 'lower', data: loBound, borderColor: 'rgba(255,255,255,.1)', fill: false, pointRadius: 0, borderWidth: 1, borderDash: [4, 3] }
+              ]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              plugins: { legend: { display: false }, tooltip: { enabled: false } },
+              scales: {
+                x: { grid: { display: false }, ticks: { color: '#5c6b8a', font: { size: 9 } } },
+                y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#5c6b8a', font: { size: 9 }, callback: v => v.toFixed(0) + '%' }, min: Math.max(0, lo - 5), max: Math.min(100, hi + 5) }
+              }
+            }
+          });
+        }, 80);
+      });
+    }
+
+    function renderInfra(cpuVals, memVals, netVals) {
+      const kpis = document.getElementById('infra-kpis');
+      kpis.innerHTML = '';
+      IPS.forEach((ip, i) => {
+        const cpu = cpuVals[ip] ?? 0;
+        const mem = memVals[ip] ?? 0;
+        const ni = netVals[ip]?.in ?? 0;
+        const no = netVals[ip]?.out ?? 0;
+        const col = ['#8b7aff', '#22d3ee'][i];
+        kpis.innerHTML += `
+      <div class="kpi">
+        <div class="kpi-stripe" style="background:${col}"></div>
+        <div class="kpi-label">${ip}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.4rem">
+          <div>
+            <div style="font-size:.6rem;color:var(--muted);margin-bottom:2px">CPU</div>
+            <div style="font-size:1.2rem;font-weight:900;color:${barColor(cpu)}">${pct(cpu)}</div>
+            <div class="gauge-bar" style="margin-top:4px"><div class="gauge-fill" style="width:${Math.min(100, cpu).toFixed(0)}%;background:${barColor(cpu)}"></div></div>
+          </div>
+          <div>
+            <div style="font-size:.6rem;color:var(--muted);margin-bottom:2px">Memory</div>
+            <div style="font-size:1.2rem;font-weight:900;color:${barColor(mem)}">${pct(mem)}</div>
+            <div class="gauge-bar" style="margin-top:4px"><div class="gauge-fill" style="width:${Math.min(100, mem).toFixed(0)}%;background:${barColor(mem)}"></div></div>
+          </div>
+        </div>
+        <div class="kpi-hint" style="margin-top:.5rem">Net IN: ${fmt(ni)} MB/s · OUT: ${fmt(no)} MB/s</div>
+      </div>`;
+
+        hist.cpu[ip].push(+cpu.toFixed(1));
+        hist.mem[ip].push(+mem.toFixed(1));
+        hist.net[ip].in.push(+ni.toFixed(2));
+        hist.net[ip].out.push(+no.toFixed(2));
+        const maxL = 20;
+        if (hist.cpu[ip].length > maxL) { hist.cpu[ip].shift(); hist.mem[ip].shift(); hist.net[ip].in.shift(); hist.net[ip].out.shift(); }
+      });
+
+      const labels = hist.cpu[IPS[0]].map((_, i, a) => `-${(a.length - 1 - i) * 30}s`);
+
+      ['cpu', 'mem'].forEach(type => {
+        const id = 'ch-' + type;
+        const ctx = document.getElementById(id)?.getContext('2d');
+        if (!ctx) return;
+        if (charts[id]) charts[id].destroy();
+        charts[id] = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels, datasets: IPS.map((ip, i) => ({
+              label: ip,
+              data: type === 'cpu' ? hist.cpu[ip] : hist.mem[ip],
+              borderColor: ['#8b7aff', '#22d3ee'][i],
+              fill: false, tension: .4, pointRadius: 1, borderWidth: 2
+            }))
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: true, labels: { font: { size: 10 }, color: '#5c6b8a', boxWidth: 8 } }, tooltip: { backgroundColor: 'rgba(10,15,28,.95)', borderColor: 'rgba(255,255,255,.06)', borderWidth: 1, titleColor: '#5c6b8a', bodyColor: '#e8ecf4', padding: 10, cornerRadius: 8 } },
+            scales: { x: { grid: { color: 'rgba(255,255,255,.025)' }, ticks: { color: '#5c6b8a', maxTicksLimit: 8, font: { size: 10 } } }, y: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#5c6b8a', font: { size: 10 }, callback: v => v + '%' } } }
+          }
+        });
+      });
+
+      const netCtx = document.getElementById('ch-net')?.getContext('2d');
+      if (netCtx) {
+        if (charts['ch-net']) charts['ch-net'].destroy();
+        charts['ch-net'] = new Chart(netCtx, {
+          type: 'line',
+          data: {
+            labels, datasets: IPS.flatMap((ip, i) => [
+              { label: `${ip} IN`, data: hist.net[ip].in, borderColor: ['#8b7aff', '#22d3ee'][i], fill: false, tension: .4, pointRadius: 1, borderWidth: 2 },
+              { label: `${ip} OUT`, data: hist.net[ip].out, borderColor: ['#f472b6', '#34d399'][i], fill: false, tension: .4, pointRadius: 1, borderWidth: 2, borderDash: [5, 3] }
+            ])
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: true, labels: { font: { size: 10 }, color: '#5c6b8a', boxWidth: 8 } }, tooltip: { backgroundColor: 'rgba(10,15,28,.95)', borderColor: 'rgba(255,255,255,.06)', borderWidth: 1, titleColor: '#5c6b8a', bodyColor: '#e8ecf4', padding: 10, cornerRadius: 8 } },
+            scales: { x: { grid: { color: 'rgba(255,255,255,.025)' }, ticks: { color: '#5c6b8a', maxTicksLimit: 8, font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#5c6b8a', font: { size: 10 }, callback: v => v + ' MB/s' } } }
+          }
+        });
+      }
+    }
+
+    function renderPG(conn) {
+      const kpis = document.getElementById('pg-kpis');
+      const score = hist.pg_score ?? 0;
+      kpis.innerHTML = `
+    <div class="kpi"><div class="kpi-stripe" style="background:var(--pk)"></div>
+      <div class="kpi-label">Connexions actives</div>
+      <div class="kpi-val" style="color:var(--pk)">${Math.round(conn)}</div>
+      <div class="kpi-hint">pg_stat_activity_count</div></div>
+    <div class="kpi"><div class="kpi-stripe" style="background:var(--gn)"></div>
+      <div class="kpi-label">Statut</div>
+      <div class="kpi-val" style="color:var(--gn);font-size:1rem">Online</div>
+      <div class="kpi-hint">PostgreSQL 14+</div></div>
+    <div class="kpi"><div class="kpi-stripe" style="background:${scoreColor(score)}"></div>
+      <div class="kpi-label">Anomaly score</div>
+      <div class="kpi-val" style="color:${scoreColor(score)};font-size:1rem">${fmt(score, 3)}</div>
+      <div class="kpi-hint"><span class="badge ${scoreClass(score)}">${scoreLabel(score)}</span></div></div>`;
+
+      hist.pg.push(+conn.toFixed(0));
+      if (hist.pg.length > 20) hist.pg.shift();
+      const labels = hist.pg.map((_, i, a) => `-${(a.length - 1 - i) * 30}s`);
+
+      const ctx = document.getElementById('ch-pg')?.getContext('2d');
+      if (!ctx) return;
+      if (charts.pg) charts.pg.destroy();
+      charts.pg = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets: [{ label: 'Connexions', data: hist.pg, borderColor: '#f472b6', backgroundColor: 'rgba(244,114,182,.07)', fill: true, tension: .4, pointRadius: 2, borderWidth: 2 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(10,15,28,.95)', borderColor: 'rgba(255,255,255,.06)', borderWidth: 1, titleColor: '#5c6b8a', bodyColor: '#e8ecf4', padding: 10, cornerRadius: 8 } },
+          scales: { x: { grid: { color: 'rgba(255,255,255,.025)' }, ticks: { color: '#5c6b8a', maxTicksLimit: 8, font: { size: 10 } } }, y: { min: 0, grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#5c6b8a', font: { size: 10 } } } }
+        }
+      });
+    }
+
+    function renderContainers(cpuData, memData) {
+      const el = document.getElementById('ctr-cards');
+      el.innerHTML = '';
+      const names = [...new Set([...Object.keys(cpuData), ...Object.keys(memData)])].slice(0, 12);
+      names.forEach((n, i) => {
+        const cpu = cpuData[n] ?? 0;
+        const mem = memData[n] ?? 0;
+        const col = PALETTE[i % PALETTE.length];
+        el.innerHTML += `
+      <div class="kpi">
+        <div class="kpi-stripe" style="background:${col}"></div>
+        <div class="kpi-label" style="margin-bottom:.4rem">${n.length > 16 ? n.slice(0, 16) + '…' : n}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
+          <div>
+            <div style="font-size:.6rem;color:var(--muted)">CPU</div>
+            <div style="font-size:1rem;font-weight:900;color:${barColor(cpu)}">${pct(cpu)}</div>
+            <div class="gauge-bar"><div class="gauge-fill" style="width:${Math.min(100, cpu).toFixed(0)}%;background:${barColor(cpu)}"></div></div>
+          </div>
+          <div>
+            <div style="font-size:.6rem;color:var(--muted)">MEM</div>
+            <div style="font-size:1rem;font-weight:900;color:${col}">${mem.toFixed(0)}MB</div>
+          </div>
+        </div>
+      </div>`;
+      });
+
+      if (names.length === 0) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:1rem">Aucun container détecté</div>';
+        return;
+      }
+
+      ['cpu', 'mem'].forEach(type => {
+        const id = 'ch-ctr-' + type;
+        const ctx = document.getElementById(id)?.getContext('2d');
+        if (!ctx) return;
+        if (charts[id]) charts[id].destroy();
+        charts[id] = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: names.map(n => n.length > 14 ? n.slice(0, 14) + '…' : n),
+            datasets: [{
+              label: type === 'cpu' ? 'CPU %' : 'Mem MB',
+              data: names.map(n => type === 'cpu' ? +(cpuData[n] ?? 0).toFixed(1) : +(memData[n] ?? 0).toFixed(0)),
+              backgroundColor: names.map((_, i) => PALETTE[i % PALETTE.length] + 'aa'),
+              borderColor: names.map((_, i) => PALETTE[i % PALETTE.length]),
+              borderWidth: 1, borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(10,15,28,.95)', borderColor: 'rgba(255,255,255,.06)', borderWidth: 1, titleColor: '#5c6b8a', bodyColor: '#e8ecf4', padding: 10, cornerRadius: 8 } },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#5c6b8a', font: { size: 9 } } },
+              y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#5c6b8a', font: { size: 10 }, callback: v => type === 'cpu' ? v + '%' : v + 'MB' } }
+            }
+          }
+        });
+      });
+    }
+
+    function renderClassification(scores) {
+      const tbody = document.getElementById('class-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      
+      let alerts = [];
+      ML_METRICS.forEach(m => {
+        const s = scores[m] ?? 0;
+        if (s >= 0.2) { // Only show somewhat elevated scores
+          let sev = 'LOW';
+          let badge = 'badge-ok';
+          let act = 'Surveiller simplement.';
+          
+          if (s >= 0.8) {
+             sev = 'CRITICAL'; badge = 'badge-crit'; act = 'Alerte immédiate. Vérifiez les ressources impactées via les logs.';
+          } else if (s >= 0.5) {
+             sev = 'HIGH'; badge = 'badge-warn'; act = 'Forte activité inattendue, investiguer la charge.';
+          } else if (s >= 0.3) {
+             sev = 'MEDIUM'; badge = 'badge-warn'; act = 'Vérifier s\'il s\'agit d\'un pic isolé.';
+          }
+          
+          alerts.push({ m, s, sev, badge, act });
+        }
+      });
+      
+      alerts.sort((a,b) => b.s - a.s);
+      
+      if (alerts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:1rem">Toutes les métriques sont normales. Aucune alerte n\'approche le seuil critique.</td></tr>';
+      } else {
+        alerts.forEach(a => {
+          tbody.innerHTML += `
+            <tr>
+              <td><span style="font-weight:700">${ML_NAMES[a.m]}</span></td>
+              <td>${fmt(a.s, 3)}</td>
+              <td><span class="badge ${a.badge}">${a.sev}</span></td>
+              <td><span style="color:var(--muted)">${a.act}</span></td>
+            </tr>
+          `;
+        });
+      }
+    }
+
+    async function fetchAll() {
+      document.getElementById('last-ts').textContent = new Date().toLocaleTimeString('fr-FR');
+
+      const [anomR, detR, f1R, f6R, loR, hiR] = await Promise.all([
+        qry('ml_anomaly_score'),
+        qry('ml_anomaly_detected'),
+        qry('ml_forecast_next_value{steps_ahead="1"}'),
+        qry('ml_forecast_next_value{steps_ahead="6"}'),
+        qry('ml_forecast_lower_bound'),
+        qry('ml_forecast_upper_bound')
+      ]);
+
+      const scores = {}, detected = {}, f1 = {}, f6 = {}, lo = {}, hi = {};
+      anomR.forEach(r => scores[r.metric.metric_name] = +r.value[1]);
+      detR.forEach(r => detected[r.metric.metric_name] = +r.value[1]);
+      f1R.forEach(r => f1[r.metric.metric_name] = +r.value[1]);
+      f6R.forEach(r => f6[r.metric.metric_name] = +r.value[1]);
+      loR.forEach(r => lo[r.metric.metric_name] = +r.value[1]);
+      hiR.forEach(r => hi[r.metric.metric_name] = +r.value[1]);
+
+      renderGauges(scores, detected);
+      renderAnomChart(scores);
+      renderClassification(scores);
+
+      const fcData = {};
+      ['cpu', 'memory', 'disk'].forEach(m => {
+        fcData[m] = { cur: scores[m] ?? 0, f1: f1[m] ?? 0, f6: f6[m] ?? 0, lo: lo[m] ?? 0, hi: hi[m] ?? 0 };
+      });
+      renderForecast(fcData);
+
+      const [cpuR, memR, netInR, netOutR] = await Promise.all([
+        qry('100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)'),
+        qry('(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100'),
+        qry('sum by(instance) (rate(node_network_receive_bytes_total{device!="lo"}[5m])) / 1024 / 1024'),
+        qry('sum by(instance) (rate(node_network_transmit_bytes_total{device!="lo"}[5m])) / 1024 / 1024')
+      ]);
+
+      const cpuVals = {}, memVals = {}, netVals = {};
+      IPS.forEach(ip => { cpuVals[ip] = 0; memVals[ip] = 0; netVals[ip] = { in: 0, out: 0 }; });
+      cpuR.forEach(r => { const ip = r.metric.instance?.split(':')[0]; if (ip) cpuVals[ip] = +r.value[1]; });
+      memR.forEach(r => { const ip = r.metric.instance?.split(':')[0]; if (ip) memVals[ip] = +r.value[1]; });
+      netInR.forEach(r => { const ip = r.metric.instance?.split(':')[0]; if (ip) netVals[ip] = { ...netVals[ip], in: +r.value[1] }; });
+      netOutR.forEach(r => { const ip = r.metric.instance?.split(':')[0]; if (ip) netVals[ip] = { ...netVals[ip], out: +r.value[1] }; });
+      renderInfra(cpuVals, memVals, netVals);
+
+      const onlineCount = Object.values(cpuVals).filter(v => v > 0).length;
+      document.getElementById('nodes-count').textContent = `${onlineCount} nodes online`;
+
+      const [pgR, ctrCpuR, ctrMemR] = await Promise.all([
+        qry('pg_stat_activity_count'),
+        qry('sum by(name) (rate(container_cpu_usage_seconds_total{name!=""}[5m])) * 100'),
+        qry('sum by(name) (container_memory_usage_bytes{name!=""}) / 1024 / 1024')
+      ]);
+
+      const pgConn = pgR.length ? +pgR[0].value[1] : 0;
+      hist.pg_score = scores['pg_connections'] ?? 0;
+      renderPG(pgConn);
+
+      const ctrCpu = {}, ctrMem = {};
+      ctrCpuR.forEach(r => { if (r.metric.name) ctrCpu[r.metric.name] = +r.value[1]; });
+      ctrMemR.forEach(r => { if (r.metric.name) ctrMem[r.metric.name] = +r.value[1]; });
+      renderContainers(ctrCpu, ctrMem);
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+    fetchAll();
+    startCountdown();
+  </script>
+</body>
+
+</html>

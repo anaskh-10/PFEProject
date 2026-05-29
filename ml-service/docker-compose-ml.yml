@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: ml-service
+    restart: always
+    network_mode: host
+    environment:
+      - PROMETHEUS_URL=http://localhost:9090
+      - LOG_LEVEL=INFO
+    volumes:
+      - ml_models:/app/models
+      - ml_logs:/app/logs
+    ports:
+      - "5000:5000"
+
+volumes:
+  ml_models:
+  ml_logs:
