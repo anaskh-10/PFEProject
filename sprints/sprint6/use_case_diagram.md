@@ -1,22 +1,26 @@
-# Sprint 6: Use Case Diagram
-## Goal: Implement Isolation Forest Anomaly Detection.
+# Sprint 6 — Use Case Diagram (PlantUML)
+## Period: 29 May – 06 Jun | US9
 
-```mermaid
-graph LR
-    subgraph Actors
-        ML["ML Service"]
-        Admin["Administrator"]
-    end
+@startuml
+left to right direction
+skinparam packageStyle rectangle
 
-    subgraph "Anomaly Detection"
-        UC061(("Train Isolation Forest"))
-        UC062(("Detect Anomalies"))
-        UC063(("Expose Anomaly Scores"))
-        UC064(("Configure Thresholds"))
-    end
+actor Operator as op
+actor "MCP Agent" as agent <<system>>
 
-    Admin --> UC064
-    ML --> UC061
-    ML --> UC062
-    ML --> UC063
-```
+rectangle "AIOps Platform — Sprint 6" {
+    usecase "US9: Query metrics via\nNatural Language" as UC9
+    usecase "Perform statistical analysis\nof system health" as UC9a
+    usecase "Generate dynamic\nHTML Dashboards" as UC9b
+    usecase "Execute PromQL queries\nautonomously" as UC9c
+}
+
+op --> UC9
+op --> UC9b
+agent --> UC9c
+agent --> UC9a
+
+UC9 ..> UC9c : <<include>>
+UC9b ..> UC9c : <<include>>
+
+@enduml

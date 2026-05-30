@@ -1,42 +1,65 @@
-# AIOps Project: Multi-Sprint Documentation Index
+# AIOps Project — Documentation Index
 
-This index provides access to the Class, Use Case, and Sequence diagrams for each sprint of the AIOps platform development.
-
-## 🏁 Minimum Viable Product (MVP) Iterations
-
-### [Sprint 1: Infrastructure Foundations](file:///home/anas-youssef/aiops-project/sprints/sprint1/)
-- [Class](file:///home/anas-youssef/aiops-project/sprints/sprint1/class_diagram.md) | [Use Case](file:///home/anas-youssef/aiops-project/sprints/sprint1/use_case_diagram.md) | [Sequence](file:///home/anas-youssef/aiops-project/sprints/sprint1/sequence_diagram.md)
-
-### [Sprint 2: Metrics & Visualization](file:///home/anas-youssef/aiops-project/sprints/sprint2/)
-- [Summary](file:///home/anas-youssef/aiops-project/sprints/sprint2/summary.md) (All Diagrams)
-
-### [Sprint 3: Pipeline Validation](file:///home/anas-youssef/aiops-project/sprints/sprint3/)
-- [Use Case](file:///home/anas-youssef/aiops-project/sprints/sprint3/use_case_diagram.md)
-
-### [Sprint 4: Alerting & Discord](file:///home/anas-youssef/aiops-project/sprints/sprint4/)
-- [Class](file:///home/anas-youssef/aiops-project/sprints/sprint4/class_diagram.md) | [Use Case](file:///home/anas-youssef/aiops-project/sprints/sprint4/use_case_diagram.md) | [Sequence](file:///home/anas-youssef/aiops-project/sprints/sprint4/sequence_diagram.md)
-
-### [Sprint 5: ML Service Architecture](file:///home/anas-youssef/aiops-project/sprints/sprint5/)
-- [Class](file:///home/anas-youssef/aiops-project/sprints/sprint5/class_diagram.md)
-
-### [Sprint 6: Anomaly Detection (Isolation Forest)](file:///home/anas-youssef/aiops-project/sprints/sprint6/)
-- [Class](file:///home/anas-youssef/aiops-project/sprints/sprint6/class_diagram.md) | [Use Case](file:///home/anas-youssef/aiops-project/sprints/sprint6/use_case_diagram.md) | [Sequence](file:///home/anas-youssef/aiops-project/sprints/sprint6/sequence_diagram.md)
+This index provides navigation to all architecture diagrams and project management documents for the AIOps platform, organized by sprint.
 
 ---
 
-## 📈 Advanced Features & Optimization
+## 📋 Project Management
 
-### [Sprint 7: Forecasting (ARIMA)](file:///home/anas-youssef/aiops-project/sprints/sprint7/)
-- [Class](file:///home/anas-youssef/aiops-project/sprints/sprint7/class_diagram.md) | [Use Case](file:///home/anas-youssef/aiops-project/sprints/sprint7/use_case_diagram.md) | [Sequence](file:///home/anas-youssef/aiops-project/sprints/sprint7/sequence_diagram.md)
-
-### [Sprint 8: Performance & Summaries](file:///home/anas-youssef/aiops-project/sprints/sprint8/)
-- [Sequence](file:///home/anas-youssef/aiops-project/sprints/sprint8/sequence_diagram.md)
-
-### [Sprint 9: Zabbix & AI Integration (Current)](file:///home/anas-youssef/aiops-project/sprints/sprint9/)
-- [Class](file:///home/anas-youssef/aiops-project/sprints/sprint9/class_diagram.md) | [Use Case](file:///home/anas-youssef/aiops-project/sprints/sprint9/use_case_diagram.md) | [Sequence](file:///home/anas-youssef/aiops-project/sprints/sprint9/sequence_diagram.md)
+- [**Product Backlog**](file:///home/anas-youssef/aiops-project/backlog.md) — 10 user stories, 78 total story points
+- [**Sprint Planning**](file:///home/anas-youssef/aiops-project/sprint_plan.md) — 6-sprint roadmap, Feb–Jun 2026
 
 ---
 
-## 📋 General Documentation
-- [**Product Backlog**](file:///home/anas-youssef/aiops-project/backlog.md)
-- [**Master Sprint Plan**](file:///home/anas-youssef/aiops-project/sprint_plan.md)
+## 🏁 MVP Sprints
+
+### [Sprint 1](file:///home/anas-youssef/aiops-project/sprints/sprint1/) — 06–19 Feb | US1: Docker Deployment
+| Diagram | Link |
+|:---|:---|
+| Use Case | [use_case_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint1/use_case_diagram.md) |
+| Class | [class_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint1/class_diagram.md) |
+| Sequence | [sequence_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint1/sequence_diagram.md) |
+
+### [Sprint 2](file:///home/anas-youssef/aiops-project/sprints/sprint2/) — 20 Feb–19 Mar | US2, US3, US4: Collection & Visualization
+| Diagram | Link |
+|:---|:---|
+| Use Case | [use_case_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint2/use_case_diagram.md) |
+| Class | [class_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint2/class_diagram.md) |
+| Sequence | [sequence_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint2/sequence_diagram.md) |
+
+### [Sprint 3](file:///home/anas-youssef/aiops-project/sprints/sprint3/) — 20 Mar–02 Apr | US5, US10: Alerting & Zabbix
+| Diagram | Link |
+|:---|:---|
+| Use Case | [use_case_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint3/use_case_diagram.md) |
+| Class | [class_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint3/class_diagram.md) |
+| Sequence | [sequence_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint3/sequence_diagram.md) |
+
+### [Sprint 4](file:///home/anas-youssef/aiops-project/sprints/sprint4/) — 03–30 Apr | US6, US8: Isolation Forest Anomaly Detection
+| Diagram | Link |
+|:---|:---|
+| Use Case | [use_case_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint4/use_case_diagram.md) |
+| Class | [class_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint4/class_diagram.md) |
+| Sequence | [sequence_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint4/sequence_diagram.md) |
+
+### [Sprint 5](file:///home/anas-youssef/aiops-project/sprints/sprint5/) — 01–28 May | US7: ARIMA Forecasting
+| Diagram | Link |
+|:---|:---|
+| Use Case | [use_case_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint5/use_case_diagram.md) |
+| Class | [class_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint5/class_diagram.md) |
+| Sequence | [sequence_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint5/sequence_diagram.md) |
+
+---
+
+## 🚀 Final Sprint
+
+### [Sprint 6](file:///home/anas-youssef/aiops-project/sprints/sprint6/) — 29 May–06 Jun | US9: MCP Intelligent Agent *(Current)*
+| Diagram | Link |
+|:---|:---|
+| Use Case | [use_case_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint6/use_case_diagram.md) |
+| Class | [class_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint6/class_diagram.md) |
+| Sequence | [sequence_diagram.md](file:///home/anas-youssef/aiops-project/sprints/sprint6/sequence_diagram.md) |
+
+---
+
+## 🗺️ Global Architecture
+- [**Global Use Case Diagram**](file:///home/anas-youssef/aiops-project/use_case_diagram.md) — Full platform UC map

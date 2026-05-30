@@ -1,34 +1,41 @@
-# Sprint 6: Class Diagram (PlantUML)
+# Sprint 6 — Class Diagram (PlantUML)
+## Period: 29 May – 06 Jun | US9
 
 @startuml
-title Sprint 6: Anomaly Detection Architecture
+title Sprint 6: MCP Intelligent Agent
 
-package "ML Service" {
-    class MLModelManager {
-        -anomaly_detectors: dict
-        -forecasters: dict
-        +load_models(path)
-        +save_models(path)
+package "MCP Agent" {
+    class "MCPAgent" as mcp {
+        +tools: list
+        +prompts: list
+        +process_query(text): str
+        +generate_html_dashboard(): str
     }
 
-    class AnomalyDetector {
-        -model: IsolationForest
-        -scaler: StandardScaler
-        -is_fitted: bool
-        +fit(data)
-        +predict(data)
-        +get_anomaly_score(data)
+    class "PrometheusQueryTool" as pq_tool {
+        +execute_query(promql): dict
+        +execute_range_query(promql, start, end): dict
+        +list_metrics(): list
     }
 }
 
-package "Exporter" {
-    class MLMetricsExporter {
-        -registry: CollectorRegistry
-        -anomaly_score: Gauge
-        +set_anomaly(metric, anomaly, score)
+package "AIOps Platform" {
+    class "Prometheus" as prom {
+        +query()
+    }
+    class "MLService" as ml {
+        +metrics: PrometheusFormat
     }
 }
 
-MLModelManager "1" *-- "many" AnomalyDetector : manages
-MLModelManager ..> MLMetricsExporter : updates
+mcp --> pq_tool : delegates queries
+pq_tool --> prom : executes PromQL
+mcp ..> ml : reads anomaly/forecast metrics
+
+note right of mcp
+  The MCP Agent enables 
+  Natural Language interaction
+  with the monitoring stack.
+end note
+
 @enduml

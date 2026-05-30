@@ -1,20 +1,33 @@
-# Sprint 3: Use Case Diagram
-## Goal: Pipeline Validation and Dashboard Refinement.
+# Sprint 3 — Use Case Diagram (PlantUML)
+## Period: 20 Mar – 02 Apr | US5, US10
 
-```mermaid
-graph LR
-    subgraph Actors
-        Admin["Administrator"]
-        Op["Operator"]
-    end
+@startuml
+left to right direction
+skinparam packageStyle rectangle
 
-    subgraph "Validation"
-        UC031(("Validate Collection Pipeline"))
-        UC032(("Perform Supervision Tests"))
-        UC033(("Refine Grafana Panels"))
-    end
+actor Administrator as admin
+actor Operator as op
 
-    Admin --> UC031
-    Admin --> UC032
-    Op --> UC033
-```
+rectangle "AIOps Platform — Sprint 3" {
+    package "Alerting (US5)" {
+        usecase "Configure Alertmanager\n& Discord Routing" as UC5a
+        usecase "Define Prometheus\nAlert Rules" as UC5b
+        usecase "Receive Discord\nAlert" as UC5d
+    }
+    
+    package "Complementary (US10)" {
+        usecase "US10: Deploy Zabbix\nMonitoring Layer" as UC10
+        usecase "Configure Zabbix\nHosts & Triggers" as UC10a
+    }
+}
+
+admin --> UC5a
+admin --> UC5b
+admin --> UC10
+admin --> UC10a
+op    --> UC5d
+
+UC5b ..> UC5a : <<triggers>>
+UC10a ..> UC10 : <<include>>
+
+@enduml
